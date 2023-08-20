@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AI Chatbot</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        #chat-container {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .message {
+            margin: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .user-message {
+            text-align: right;
+            background-color: #e0f7fa;
+            color: #333;
+        }
+        .bot-message {
+            text-align: left;
+            background-color: #f0f4c3;
+            color: #333;
+        }
+        #user-input {
+            width: 70%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+        #submit-button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            border: none;
+            border-radius: 5px;
+            color: #fff;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        #submit-button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .loading {
+            display: inline-block;
+            animation: loading 1s infinite;
+            font-size: 20px;
+            margin-left: 5px;
+        }
+        @keyframes loading {
+            0%, 100% {
+                content: ".";
+            }
+            33% {
+                content: "..";
+            }
+            66% {
+                content: "...";
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>AI Chatbot</h1>
+        <div id="chat-container"></div>
+        <div id="user-input-container">
+            <input type="text" id="user-input" placeholder="Type your message...">
+            <button id="submit-button">Send</button>
+        </div>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $("#submit-button").click(function() {
+                sendMessage();
+            });
+
+            $("#user-input").keypress(function(event) {
+                if (event.which === 13) {
+                    event.preventDefault();
+                    sendMessage();
+                }
+            });
+
+            function sendMessage() {
+                var userMessage = $("#user-input").val().trim();
+                if (userMessage !== "") {
+                    displayUserMessage(userMessage);
+                    $("#submit-button").prop("disabled", true);
+                    $("#submit-button").html("Sending<span class='loading'></span>");
+                    $.post("/get_response", { user_input: userMessage }, function(data) {
+                        setTimeout(function() {
+                            displayBotMessage(data.response);
+                            $("#submit-button").prop("disabled", false);
+                            $("#submit-button").html("Send");
+                        }, 1000); // Simulate a delay for loading effect
+                    });
+                }
+            }
+
+            function displayUserMessage(message) {
+                $("#chat-container").append('<div class="message user-message"><p>' + message + '</p></div>');
+                $("#user-input").val("");
+                scrollToBottom();
+            }
+
+            function displayBotMessage(message) {
+                $("#chat-container").append('<div class="message bot-message"><p>' + message + '</p></div>');
+                scrollToBottom();
+            }
+
+            function scrollToBottom() {
+                $("#chat-container").scrollTop($("#chat-container")[0].scrollHeight);
+            }
+        });
+    </script>
+</body>
+</html>
